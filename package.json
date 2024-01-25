@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-local-video-selector",
   "description": "在指定文件夹搜索发送或上传视频",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
