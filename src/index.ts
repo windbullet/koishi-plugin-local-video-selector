@@ -122,10 +122,12 @@ export function apply(ctx: Context, config: Config) {
 
           let controller = new AbortController()
           let signal = controller.signal
-          let response = await ctx.http.get(link, { responseType: "stream", signal });
+          // @ts-ignore
+          let response = await ctx.http("get", link, { responseType: "stream", signal });
+          let responseStream = stream.Readable.from(response.data)
           try {
             let writer = await new Promise<any>(async resolve => {
-              await response.once("data", async (chunk: Buffer) => {
+              responseStream.once("data", async (chunk: Buffer) => {
                 let type = await filetype.fromBuffer(chunk)
                 if (!type.mime.startsWith("video")) {
                   resolve(1)
@@ -140,7 +142,8 @@ export function apply(ctx: Context, config: Config) {
                   resolve(writer)
                 }
               })
-            })            
+            })      
+if (writer === 1) return "文件类型错误，请确保链接为视频文件"
             if (writer === 2) {
               controller.abort()
               return "已存在同名文件"
@@ -149,7 +152,7 @@ export function apply(ctx: Context, config: Config) {
               return "文件类型错误，请确保链接为视频文件"
             }
 
-            await pipeline(response, writer)
+            await pipeline(responseStream, writer)
 
             return "上传成功"
           } catch (err) {
